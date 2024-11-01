@@ -1,0 +1,16 @@
+{
+    "name": "SleepyWaschbarStudios.MiniCharacterGen.Tests",
+    "references": [
+        "SleepyWaschbarStudios.MiniCharacterGen"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

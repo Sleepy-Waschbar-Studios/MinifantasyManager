@@ -1,0 +1,25 @@
+{
+  "author": {
+    "name": "Braedon Wooding",
+    "email": "braedon@sleepywaschbarstudios",
+    "url": "https://sleepywaschbarstudios.com.au"
+  },
+  "description": "Allows you to layer multiple sprites and setup animations easily",
+  "displayName": "Minifantasy Character Creator",
+  "keywords": [
+    "unity"
+  ],
+  "license": "MIT",
+  "name": "com.sleepywaschbarstudios.minicharactergen",
+  "samples": [
+    {
+      "displayName": "Sample 1",
+      "path": "Samples~/Sample 1"
+    },
+    {
+      "displayName": "Sample 2",
+      "path": "Samples~/Sample 2"
+    }
+  ],
+  "version": "1.0.0"
+}
