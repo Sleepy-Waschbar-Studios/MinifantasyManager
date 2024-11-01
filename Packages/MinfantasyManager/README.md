@@ -18,14 +18,14 @@ Find the `manifest.json` file in the `Packages` directory in your project and ed
 ```
 {
   "dependencies": {
-    "com.SleepyWaschbarStudios.MiniCharacterGen": "https://github.com/Zigurous/Template.git",
+    "com.SleepyWaschbarStudios.MinifantasyManager": "https://github.com/Zigurous/Template.git",
     ...
   },
 }
 ```
 To select a particular version of the package, add the suffix `#{git-tag}`.
 
-* e.g. `"com.SleepyWaschbarStudios.MiniCharacterGen": "https://github.com/Zigurous/Template.git#1.2.0"`
+* e.g. `"com.SleepyWaschbarStudios.MinifantasyManager": "https://github.com/Zigurous/Template.git#1.2.0"`
 
 
 ## Acknowledgements

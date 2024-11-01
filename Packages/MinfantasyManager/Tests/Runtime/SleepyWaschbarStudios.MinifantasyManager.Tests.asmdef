@@ -1,7 +1,7 @@
 {
-    "name": "SleepyWaschbarStudios.MiniCharacterGen.Tests",
+    "name": "SleepyWaschbarStudios.MinifantasyManager.Tests",
     "references": [
-        "SleepyWaschbarStudios.MiniCharacterGen"
+        "SleepyWaschbarStudios.MinifantasyManager"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

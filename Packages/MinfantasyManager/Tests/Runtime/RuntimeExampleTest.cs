@@ -4,7 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace SleepyWaschbarStudios.MiniCharacterGen.Tests
+namespace SleepyWaschbarStudios.MinifantasyManager.Tests
 {
     public class RuntimeExampleTest
     {

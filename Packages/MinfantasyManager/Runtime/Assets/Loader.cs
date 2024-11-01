@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinifantasyCharacterCreator.Runtime.Assets
+namespace MinifantasyManager.Runtime.Assets
 {
     public class Loader
     {

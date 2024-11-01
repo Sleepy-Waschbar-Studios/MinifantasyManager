@@ -1,9 +1,12 @@
 {
-    "name": "SleepyWaschbarStudios.MiniCharacterGen.Editor",
+    "name": "SleepyWaschbarStudios.MinifantasyManager.Editor.Tests",
     "references": [
-        "SleepyWaschbarStudios.MiniCharacterGen"
+        "SleepyWaschbarStudios.MinifantasyManager",
+        "SleepyWaschbarStudios.MinifantasyManager.Editor"
     ],
-    "optionalUnityReferences": [],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
     "includePlatforms": [
         "Editor"
     ],

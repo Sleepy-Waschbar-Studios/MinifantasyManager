@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SleepyWaschbarStudios.MiniCharacterGen {
+namespace SleepyWaschbarStudios.MinifantasyManager
+{
 
     public class EditorExample : MonoBehaviour
     {

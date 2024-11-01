@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinifantasyCharacterCreator.Runtime.Assets
+namespace MinifantasyManager.Runtime.Assets
 {
     /// <summary>
     /// Imports the minifantasy files from external.

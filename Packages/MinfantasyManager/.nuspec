@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>SleepyWaschbarGames.MinifantasyCharacterCreator</id>
+    <id>SleepyWaschbarGames.MinifantasyManager</id>
     <version>0.1.1</version>
     <description>Palette swapping, layering items and more.</description>
     <authors>Braedon Wooding of Sleepy Waschbar Games</authors>

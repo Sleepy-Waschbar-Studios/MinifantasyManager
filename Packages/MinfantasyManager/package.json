@@ -1,16 +1,16 @@
 {
   "author": {
     "name": "Braedon Wooding",
-    "email": "braedon@sleepywaschbarstudios",
+    "email": "braedon@sleepywaschbarstudios.com.au",
     "url": "https://sleepywaschbarstudios.com.au"
   },
-  "description": "Allows you to layer multiple sprites and setup animations easily",
-  "displayName": "Minifantasy Character Creator",
+  "description": "Manages minifantasy assets and has tons of utilities built for UnityEngine",
+  "displayName": "Minifantasy Manager",
   "keywords": [
     "unity"
   ],
   "license": "MIT",
-  "name": "com.sleepywaschbarstudios.minicharactergen",
+  "name": "com.sleepywaschbarstudios.minifantasymanager",
   "samples": [
     {
       "displayName": "Sample 1",
