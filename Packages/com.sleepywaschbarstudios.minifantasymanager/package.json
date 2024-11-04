@@ -9,6 +9,9 @@
   "keywords": [
     "unity"
   ],
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
   "license": "MIT",
   "name": "com.sleepywaschbarstudios.minifantasymanager",
   "samples": [

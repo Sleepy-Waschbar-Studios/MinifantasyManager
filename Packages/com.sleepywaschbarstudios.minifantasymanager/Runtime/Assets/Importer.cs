@@ -47,21 +47,21 @@ namespace MinifantasyManager.Runtime.Assets
             You can pretty easily recategorize by just modifying the JSON
 
             We do the following:
-            - Copy CommercialLicense to `Licenses/Minifantasy/<File>_CommercialLicense.txt
-              - You may want to just have one license in here
             - Writes to `MinifantasyManager/Packages.json` with the following structure
                 {
                     "Package": "Minifantasy_Magic_Weapons_And_Effects",
-                    "Version": "v1.0",
+                    "Version": "1.0",
                     "LastImported": <Date>,
                     "Name": "Magic weapons and effects",
-                    "Creatures": [
-                        ... List of creatures
-                    ],
-                    "Weapons": [
-                        ... List of weapons
-                    ],
-                    ... and so on for each category
+                    "Assets": {
+                        "Creatures": [
+                            ...
+                        ],
+                        "Weapons": [
+                            ...
+                        ],
+                        ...
+                    }
                 }
             - Writes to `MinifantasyManager/...` but **won't** match original folder structure it
               instead will match the structure `MinifantasyManager/<Type>/<Package> i.e.
