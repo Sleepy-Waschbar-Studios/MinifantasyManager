@@ -20,7 +20,7 @@ namespace MinifantasyManager.Editor.Assets
         public Dictionary<string, TemporaryWeaponClassificationDetails> Weapons = new(StringComparer.InvariantCultureIgnoreCase);
     }
 
-    public static class Loader
+    public static partial class Loader
     {
         [MenuItem("Assets/Minifantasy/Load Package", false, 1)]
         private static void LoadPackage()
@@ -145,7 +145,8 @@ namespace MinifantasyManager.Editor.Assets
 
                     var asset = handler.HandleFile(entryPath, stream);
                     if (asset == null) continue;
-                    WeaponLoader.HandleWeapon(details, entryPath, entryFilename, filenameNoExt, extension, segments, asset);
+
+                    if (HandleWeapon(details, currentMetadata, entryPath, entryFilename, filenameNoExt, extension, segments, asset)) continue;
 
                     // // Shadow mapping
                     // if (filenameNoExt.Equals("Shadows", StringComparison.InvariantCultureIgnoreCase)) {

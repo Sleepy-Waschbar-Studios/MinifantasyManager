@@ -19,9 +19,9 @@ namespace MinifantasyManager.Editor.Assets
     /// <summary>
     /// The weapons pack (and friends) require tons of custom logic, so I'm putting it in here.
     /// </summary>
-    public static class WeaponLoader
+    public static partial class Loader
     {
-        public static bool HandleWeapon(TemporaryLoadedDetails details, string entryPath, string entryFilename, string filenameNoExt, string extension, string[] segments, TemporaryAsset? asset)
+        public static bool HandleWeapon(TemporaryLoadedDetails details, ManagerMetadata currentMetadata, string entryPath, string entryFilename, string filenameNoExt, string extension, string[] segments, TemporaryAsset? asset)
         {
             // Detect if it's a likely weapon
             if (entryPath.Contains("Weapon", StringComparison.InvariantCultureIgnoreCase) || entryPath.Contains("Attack", StringComparison.InvariantCultureIgnoreCase))
@@ -49,7 +49,8 @@ namespace MinifantasyManager.Editor.Assets
                     {
                         // Figure out what characters this sprite belongs to
                         // They may be grouped i.e. _human_elf_orc...
-                        // We do this by treating `_` as a special character and removing the parents
+                        // There are some relatively annoying inconsistencies here in particular sometimes they are surrounding in `(...)`
+                        // and suffixes aren't super standardised.  So we have instead a list of 
                         var characters = filenameNoExt
                             .Split('_')
                             .Skip(1)
@@ -68,7 +69,7 @@ namespace MinifantasyManager.Editor.Assets
                     }
                 }
 
-                // Inconsistency 1: AnimationInfo is sometimes Animation_Info
+                // Inconsistency 1: AnimationInfo is sometimes Animation_Info.txt or _AnimationInfo.txt or AnimationInfo.txt
                 if (entryFilename.Replace("_", "").Equals("AnimationInfo.txt", StringComparison.InvariantCultureIgnoreCase)) {
                     // This animation needs to apply for the entire tree from this point
                     // so we have to figure out where we are
