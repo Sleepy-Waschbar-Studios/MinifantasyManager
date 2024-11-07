@@ -1,4 +1,5 @@
 ﻿#nullable enable
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,6 +32,17 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         public TextAsset? AnimationFile { get; set; }
     }
 
+    public class TemporaryCharacterDetails
+    {
+        public TemporaryCharacterDetails(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; set; }
+        public TemporaryAnimationDetails Details { get; set; } = new();
+    }
+
     public class TemporaryWeaponDetails
     {
         /// <summary>
@@ -44,6 +56,14 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         }
     }
 
+    public class TemporaryWeaponAnimationDetails
+    {
+        public TextAsset? AnimationFile { get; set; }
+        public Dictionary<string, TemporaryAnimationDetails> CharacterAnimations { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
+        public ImageAsset? ProjectileAnimation { get; set; }
+        public TemporaryAnimationDetails WeaponAnimation { get; set; } = new();
+    }
+
     public class TemporaryAnimationDetails
     {
         /// <summary>
@@ -51,10 +71,8 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         /// </summary>
         public TextAsset? AnimationFile { get; set; }
 
-        public Dictionary<string, TemporaryAnimationDetails> CharacterAnimations { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
         public ImageAsset? ForegroundAnimation { get; set; }
         public ImageAsset? BackgroundAnimation { get; set; }
-        public ImageAsset? ProjectileAnimation { get; set; }
         public ImageAsset? ShadowAnimation { get; set; }
     }
 

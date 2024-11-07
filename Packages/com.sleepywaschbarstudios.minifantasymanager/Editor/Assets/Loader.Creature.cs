@@ -21,7 +21,7 @@ namespace MinifantasyManager.Editor.Assets
     /// </summary>
     public static partial class Loader
     {
-        public static bool HandleCreature(TemporaryLoadedDetails details, ManagerMetadata currentMetadata, string entryPath, string entryFilename, string filenameNoExt, string extension, string[] segments, TemporaryAsset? asset)
+        public static bool HandleCreature(TemporaryLoadedDetails details, ManagerMetadata currentMetadata, string entryPath, string entryFilename, string filenameNoExt, string extension, string[] assetSegments, TemporaryAsset? asset)
         {
             // Creatures we can only process once we see a certain animation, for now Idle.png is the most reliable.
             // We have to reprocess basically all sprites that were previously processed for this creature, so the first step is to identify it's name
@@ -33,7 +33,21 @@ namespace MinifantasyManager.Editor.Assets
             // (not to speak of the misspellings such as YellowBearDmg.png).  We don't handle misspellings, we instead just handle that in an "exception" class that
             // will run over each sprite and update names prior to this.
 
+            // We want to grab the first folder name from the segment
+            // this only holds as long as either we have found Idle *or* there is details for this creature
+            var possibleCreatureName = assetSegments[0];
+
             if (entryFilename.EndsWith("Idle.png"))
+            {
+                // Create creature
+                var creature = new TemporaryCharacterDetails(possibleCreatureName);
+                details.CreatureAsset.Add(possibleCreatureName, creature);
+                if (details.UnprocessedAssets.TryGetValue(possibleCreatureName, out var unprocessedAssets))
+                {
+
+                }
+            }
+            else if (details.CreatureAsset.TryGetValue(possibleCreatureName, out var creature))
             {
 
             }

@@ -27,10 +27,7 @@ namespace MinifantasyManager.Editor.Assets.Handler
                 throw new BadImageFormatException($"{path} is not a valid .png file.");
             }
 
-            return new ImageAsset() {
-                Name = path,
-                Texture = texAsset,
-            };
+            return new ImageAsset(path, texAsset);
         }
     }
 
@@ -40,10 +37,7 @@ namespace MinifantasyManager.Editor.Assets.Handler
         {
             using var reader = new StreamReader(stream);
             var text = reader.ReadToEnd();
-            return new Runtime.Assets.Temporary.TextAsset() {
-                Name = path,
-                Contents = text,
-            };
+            return new Runtime.Assets.Temporary.TextAsset(path, text);
         }
     }
 

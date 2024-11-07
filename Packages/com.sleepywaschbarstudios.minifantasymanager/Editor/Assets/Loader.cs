@@ -18,6 +18,8 @@ namespace MinifantasyManager.Editor.Assets
     public class TemporaryLoadedDetails
     {
         public Dictionary<string, TemporaryWeaponClassificationDetails> Weapons = new(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, List<TemporaryAsset>> UnprocessedAssets = new(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, TemporaryCharacterDetails> CreatureAsset = new(StringComparer.InvariantCultureIgnoreCase);
     }
 
     public static partial class Loader
@@ -112,10 +114,6 @@ namespace MinifantasyManager.Editor.Assets
                 // Because we often want to query to see what other files exist (such as to match shadows) we will do a pre-parse step here
                 // We also perform canonicalisation here and some early construction
                 var details = new TemporaryLoadedDetails();
-                // Scan for CommercialLicense.txt so we know the path that we can skip
-                var skipCounter = Path.GetDirectoryName(unzip.Entries.First(e => e.Name.Equals("CommercialLicense.txt")).FullName)
-                    .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                    .Length;
 
                 foreach (var entry in unzip.Entries)
                 {
@@ -125,11 +123,15 @@ namespace MinifantasyManager.Editor.Assets
                     var entryPath = entry.FullName;
                     var entryFilename = entry.Name;
                     var filenameNoExt = Path.GetFileNameWithoutExtension(entryPath);
-                    var segments = entry.FullName.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[skipCounter..];
 
                     // Safe files to skip
                     if (entryFilename.Equals("CommercialLicense.txt", StringComparison.InvariantCultureIgnoreCase)
                     || entryFilename.Equals("Acknowledgment.txt", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (entryPath.Contains("_GIFs", StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
@@ -146,7 +148,22 @@ namespace MinifantasyManager.Editor.Assets
                     var asset = handler.HandleFile(entryPath, stream);
                     if (asset == null) continue;
 
-                    if (HandleWeapon(details, currentMetadata, entryPath, entryFilename, filenameNoExt, extension, segments, asset)) continue;
+                    var assetSegments = entry.FullName
+                        .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                        .Reverse()
+                        // Don't include the file name in segments
+                        .Skip(1)
+                        .SkipWhile(directory =>
+                            directory.Equals("_Shadows", StringComparison.InvariantCultureIgnoreCase) ||
+                            directory.Equals("_Characters", StringComparison.InvariantCultureIgnoreCase))
+                        .ToArray();
+                    if (assetSegments.Length == 0)
+                    {
+                        Debug.LogWarning($"Skipped file {entryPath} because it didn't match a folder structure we were familiar with.");
+                        continue;
+                    }
+
+                    if (HandleWeapon(details, currentMetadata, entryPath, entryFilename, filenameNoExt, extension, assetSegments, asset)) continue;
 
                     // // Shadow mapping
                     // if (filenameNoExt.Equals("Shadows", StringComparison.InvariantCultureIgnoreCase)) {
