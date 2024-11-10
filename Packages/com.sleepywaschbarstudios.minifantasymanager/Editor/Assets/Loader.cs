@@ -13,16 +13,23 @@ using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
-namespace MinifantasyManager.Editor.Assets
+namespace MinifantasyManager.Editor.Assets.Loaders
 {
     public class TemporaryLoadedDetails
     {
         public Dictionary<string, TemporaryWeaponClassificationDetails> Weapons = new(StringComparer.InvariantCultureIgnoreCase);
+        /// <summary>
+        /// This is free for your loader to use (though ideally try to add a unique suffix for your loader).
+        /// 
+        /// is useful if you want to make some processing dependent on finding certain assets later.
+        /// </summary>
         public Dictionary<string, List<TemporaryAsset>> UnprocessedAssets = new(StringComparer.InvariantCultureIgnoreCase);
         public Dictionary<string, TemporaryCharacterDetails> CreatureAsset = new(StringComparer.InvariantCultureIgnoreCase);
+
+        public HashSet<string> ProcessedAssets = new(StringComparer.InvariantCultureIgnoreCase);
     }
 
-    public static partial class Loader
+    public static class Loader
     {
         [MenuItem("Assets/Minifantasy/Load Package", false, 1)]
         private static void LoadPackage()
@@ -33,13 +40,20 @@ namespace MinifantasyManager.Editor.Assets
 
         private const string PackagePath = "MinifantasyManager/Packages.json";
         private static readonly IHandler IgnoreHandler = new IgnoreHandler();
-        private static readonly IReadOnlyDictionary<string, IHandler> ExtensionHandlers = new Dictionary<string, IHandler>(StringComparer.InvariantCultureIgnoreCase) {
+        public static readonly IReadOnlyDictionary<string, IHandler> ExtensionHandlers = new Dictionary<string, IHandler>(StringComparer.InvariantCultureIgnoreCase) {
             [".png"] = new PngHandler(),
             [".txt"] = new TextHandler(),
             [".url"] = IgnoreHandler,
             [".gif"] = IgnoreHandler,
             [".asperite"] = IgnoreHandler,
             [""] = IgnoreHandler,
+        };
+        public static readonly List<AssetLoaderBase> Loaders = new()
+        {
+            new WeaponAssetLoader(),
+            // Creatures have to default to pushing their items to a global unprocessed list
+            // which we can avoid if the handlers above it take it instead.
+            new CreatureAssetLoader(),
         };
 
         private static T EnsureJsonAssetExists<T>(string path) where T : new()
@@ -73,6 +87,7 @@ namespace MinifantasyManager.Editor.Assets
 
             var filename = Path.GetFileName(path);
             using var unzip = ZipFile.OpenRead(path);
+            var unprocessedAssets = new List<string>();
 
             var match = PatreonAllExclusivesRegex.Match(filename);
             if (match.Success) {
@@ -121,12 +136,10 @@ namespace MinifantasyManager.Editor.Assets
                     if (entry.IsDirectory()) continue;
 
                     var entryPath = entry.FullName;
-                    var entryFilename = entry.Name;
-                    var filenameNoExt = Path.GetFileNameWithoutExtension(entryPath);
 
                     // Safe files to skip
-                    if (entryFilename.Equals("CommercialLicense.txt", StringComparison.InvariantCultureIgnoreCase)
-                    || entryFilename.Equals("Acknowledgment.txt", StringComparison.InvariantCultureIgnoreCase))
+                    if (entryPath.Equals("CommercialLicense.txt", StringComparison.InvariantCultureIgnoreCase)
+                    || entryPath.Equals("Acknowledgment.txt", StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
                     }
@@ -147,35 +160,24 @@ namespace MinifantasyManager.Editor.Assets
 
                     var asset = handler.HandleFile(entryPath, stream);
                     if (asset == null) continue;
-
-                    var assetSegments = entry.FullName
-                        .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                        .Reverse()
-                        // Don't include the file name in segments
-                        .Skip(1)
-                        .SkipWhile(directory =>
-                            directory.Equals("_Shadows", StringComparison.InvariantCultureIgnoreCase) ||
-                            directory.Equals("_Characters", StringComparison.InvariantCultureIgnoreCase))
-                        .ToArray();
-                    if (assetSegments.Length == 0)
+                    
+                    if (asset.Segments.Length == 0)
                     {
                         Debug.LogWarning($"Skipped file {entryPath} because it didn't match a folder structure we were familiar with.");
                         continue;
                     }
 
-                    if (HandleWeapon(details, currentMetadata, entryPath, entryFilename, filenameNoExt, extension, assetSegments, asset)) continue;
-
-                    // // Shadow mapping
-                    // if (filenameNoExt.Equals("Shadows", StringComparison.InvariantCultureIgnoreCase)) {
-
-                    // } else if (filenameNoExt.EndsWith("Shadows", StringComparison.InvariantCultureIgnoreCase)) {
-
-                    // } else if (Path.GetDirectoryName(entryPath).EndsWith("_Shadows", StringComparison.InvariantCultureIgnoreCase)) {
-
-                    // }
+                    if (!Loaders.Any(loader => loader.TryLoad(details, currentMetadata, asset)))
+                    {
+                        unprocessedAssets.Add(asset.FullPath);
+                    }
                 }
 
-                // Let's begin 
+                // Now we can verify that all unprocessed assets have been processed.
+                foreach (var asset in unprocessedAssets.Except(details.ProcessedAssets, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    Debug.LogWarning($"Failed to process asset {asset} no handler was registered that could handle it.");
+                }
             }
         }
 

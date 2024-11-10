@@ -1,8 +1,12 @@
 ﻿#nullable enable
 
+using Codice.Client.Common.TreeGrouper;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MinifantasyManager.Runtime.Assets.Temporary
 {
@@ -34,13 +38,16 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
 
     public class TemporaryCharacterDetails
     {
-        public TemporaryCharacterDetails(string name)
+        public TemporaryCharacterDetails(string name, string prefix)
         {
             Name = name;
+            Prefix = prefix;
         }
 
-        public string Name { get; set; }
-        public TemporaryAnimationDetails Details { get; set; } = new();
+        public string Name { get; }
+        public string Prefix { get; }
+        public string ShadowPrefix { get; }
+        public Dictionary<string, TemporaryAnimationDetails> Details { get; set; } = new();
     }
 
     public class TemporaryWeaponDetails
@@ -76,22 +83,72 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         public ImageAsset? ShadowAnimation { get; set; }
     }
 
+    [Flags]
+    public enum AssetFlags
+    {
+        None = 0,
+
+        /// <summary>
+        /// _Characters
+        /// </summary>
+        CharacterAnimation = 1 << 0,
+
+        /// <summary>
+        /// _Shadows
+        /// </summary>
+        ShadowAnimation = 1 << 1,
+    }
+
     public abstract class TemporaryAsset
     {
-        public string Name { get; set; }
+        public string FullPath { get; }
+        public string Filename { get; }
+        public string FilenameNoExt { get; }
+        public string Ext { get; }
+        public string[] Segments { get; }
+        public AssetFlags Flags { get; private set; } = AssetFlags.None;
 
-        protected TemporaryAsset(string name)
+        protected TemporaryAsset(string path)
         {
-            Name = name;
+            FullPath = path;
+
+            // Note: might be a good idea to swap strings -> spans
+            //       and simpify down this logic since we do a lot of similar ops
+            Filename = Path.GetFileName(path);
+            FilenameNoExt = Path.GetFileNameWithoutExtension(path);
+            Ext = Path.GetExtension(path);
+
+            Segments = path
+                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Reverse()
+                // Don't include the file name in segments
+                .Skip(1)
+                .SkipWhile(directory =>
+                {
+                    if (directory.Equals("_Shadows", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        Flags |= AssetFlags.ShadowAnimation;
+                        return true;
+                    }
+                    else if (directory.Equals("_Characters", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        Flags |= AssetFlags.CharacterAnimation;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                })
+                .ToArray();
         }
     }
 
     public class TextAsset : TemporaryAsset
     {
-
         public string Contents { get; set; }
 
-        public TextAsset(string name, string contents) : base(name)
+        public TextAsset(string path, string contents) : base(path)
         {
             Contents = contents;
         }
@@ -99,7 +156,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
 
     public class ImageAsset : TemporaryAsset
     {
-        public ImageAsset(string name, Texture2D texture) : base(name)
+        public ImageAsset(string path, Texture2D texture) : base(path)
         {
             Texture = texture;
         }
