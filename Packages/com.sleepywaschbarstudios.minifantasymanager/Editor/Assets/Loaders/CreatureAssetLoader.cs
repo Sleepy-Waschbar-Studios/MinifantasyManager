@@ -1,13 +1,13 @@
 #nullable enable
 using MinifantasyManager.Runtime.Assets;
 using MinifantasyManager.Runtime.Assets.Temporary;
+using MinifantasyManager.Runtime.Extensions;
+using System;
+using System.Linq;
 using UnityEngine;
 
 namespace MinifantasyManager.Editor.Assets.Loaders
 {
-    /// <summary>
-    /// The weapons pack (and friends) require tons of custom logic, so I'm putting it in here.
-    /// </summary>
     public class CreatureAssetLoader : AssetLoaderBase
     {
         public const string UNPROCESSED_ASSET_PREFIX = "$Creature-";
@@ -27,18 +27,20 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             // We want to grab the first folder name from the segment
             // this only holds as long as either we have found Idle *or* there is details for this creature
             var possibleCreatureName = asset.Segments[0];
+            Debug.LogFormat("Creature {0} has a possible name of {1}", string.Join("..", asset.Segments), possibleCreatureName);
 
             // We don't want to grab shadow animation idle
-            if (asset.Filename.EndsWith("Idle.png") && !asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+            if (asset.Filename.EndsWith("Idle.png", StringComparison.InvariantCultureIgnoreCase) && !asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
             {
                 // This will tell us the prefix that all future sprites will have
-                var prefix = asset.Filename[..^"Idle.png".Length];
+                var prefix = asset.Filename[..^"Idle.png".Length].Replace("_", "");
                 var creature = new TemporaryCharacterDetails(possibleCreatureName, prefix);
                 details.CreatureAsset.Add(possibleCreatureName, creature);
-                creature.Details["Idle"] = new TemporaryAnimationDetails
+                creature.Details["Idle"] = new TemporaryAnimationDetails("Idle")
                 {
                     ForegroundAnimation = (ImageAsset)asset,
                 };
+                details.ProcessedAssets.Add(asset.FullPath);
                 if (details.UnprocessedAssets.TryGetValue(UNPROCESSED_ASSET_PREFIX + possibleCreatureName, out var unprocessedAssets))
                 {
                     // Reprocess subassets
@@ -54,10 +56,67 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                         return true;
                     });
                 }
+                return true;
             }
             else if (details.CreatureAsset.TryGetValue(possibleCreatureName, out var creature))
             {
-                
+                if (asset is ImageAsset imageAsset)
+                {
+                    // Canonicalisation
+                    string animationName = asset.Filename;
+                    
+                    // 1. Remove _Shadow suffix and Shadow prefix
+                    if (asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+                    {
+                        // TODO: Maybe use trim?
+                        animationName = animationName.ReplaceCaseInsensitive("Shadows", "").ReplaceCaseInsensitive("Shadow", "").Trim('_');
+                    }
+
+                    // 2. Foreground/background
+                    animationName = animationName.ReplaceCaseInsensitive("_f.", ".").ReplaceCaseInsensitive("_b.", ".");
+                    animationName = animationName.Replace("_", "");
+
+                    // Take a prefix
+                    if (!animationName.StartsWith(creature.Prefix))
+                    {
+                        Debug.LogWarning($"Animation {animationName} doesn't start with {creature.Prefix} so ignoring.");
+                        return false;
+                    }
+                    else
+                    {
+                        animationName = animationName[creature.Prefix.Length..];
+                    }
+                    animationName = animationName.ReplaceCaseInsensitive(".png", "");
+
+                    if (!creature.Details.TryGetValue(animationName, out var animationDetails))
+                    {
+                        animationDetails = creature.Details[animationName] = new(animationName);
+                    }
+                    if (asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+                    {
+                        animationDetails.ShadowAnimation = imageAsset;
+                    }
+                    else if (asset.Flags.HasFlag(AssetFlags.ForegroundAnimation))
+                    {
+                        animationDetails.ForegroundAnimation = imageAsset;
+                    }
+                }
+                else if (asset.Flags.HasFlag(AssetFlags.AnimationInfo))
+                {
+                    if (creature.AnimationFile != null)
+                    {
+                        Debug.LogWarning($"We have two animation info assets, overriding {creature.AnimationFile.FullPath} with {asset.FullPath}");
+                    }
+                    creature.AnimationFile = (Runtime.Assets.Temporary.TextAsset)asset;
+                }
+                else
+                {
+                    Debug.LogWarning($"We don't know how to process file {asset.FullPath}");
+                    return false;
+                }
+
+                details.ProcessedAssets.Add(asset.FullPath);
+                return true;
             }
             else
             {

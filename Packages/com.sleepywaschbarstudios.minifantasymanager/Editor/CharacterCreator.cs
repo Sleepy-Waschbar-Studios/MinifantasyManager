@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 public class CharacterCreator : EditorWindow
 {
     [SerializeField]
-    private VisualTreeAsset m_VisualTreeAsset = default;
+    private VisualTreeAsset m_VisualTreeAsset = default!;
 
     [MenuItem("Window/UI Toolkit/CharacterCreator")]
     public static void ShowExample()

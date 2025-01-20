@@ -46,15 +46,18 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             [".url"] = IgnoreHandler,
             [".gif"] = IgnoreHandler,
             [".asperite"] = IgnoreHandler,
+            [".aseprite"] = IgnoreHandler,
             [""] = IgnoreHandler,
         };
-        public static readonly List<AssetLoaderBase> Loaders = new()
+
+        public static readonly HashSet<string> FilesToSkip = new(StringComparer.InvariantCultureIgnoreCase)
         {
-            new WeaponAssetLoader(),
-            // Creatures have to default to pushing their items to a global unprocessed list
-            // which we can avoid if the handlers above it take it instead.
-            new CreatureAssetLoader(),
+            "Acknowledgment.txt",
+            "CommercialLicense.txt"
         };
+
+        public static readonly List<AssetLoaderBase> Loaders = typeof(AssetLoaderBase).Assembly.GetTypes()
+            .Where(t => t.IsSubclassOf(typeof(AssetLoaderBase))).Select(t => (AssetLoaderBase)Activator.CreateInstance(t)).ToList();
 
         private static T EnsureJsonAssetExists<T>(string path) where T : new()
         {
@@ -87,7 +90,6 @@ namespace MinifantasyManager.Editor.Assets.Loaders
 
             var filename = Path.GetFileName(path);
             using var unzip = ZipFile.OpenRead(path);
-            var unprocessedAssets = new List<string>();
 
             var match = PatreonAllExclusivesRegex.Match(filename);
             if (match.Success) {
@@ -129,6 +131,8 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 // Because we often want to query to see what other files exist (such as to match shadows) we will do a pre-parse step here
                 // We also perform canonicalisation here and some early construction
                 var details = new TemporaryLoadedDetails();
+                var fileTree = new FileTree("", "");
+                FileTree? lastFileTree = null;
 
                 foreach (var entry in unzip.Entries)
                 {
@@ -138,12 +142,20 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                     var entryPath = entry.FullName;
 
                     // Safe files to skip
-                    if (entryPath.Equals("CommercialLicense.txt", StringComparison.InvariantCultureIgnoreCase)
-                    || entryPath.Equals("Acknowledgment.txt", StringComparison.InvariantCultureIgnoreCase))
+                    if (FilesToSkip.Contains(entry.Name))
                     {
                         continue;
                     }
 
+                    // Skip files that we don't care about.
+                    if (entryPath.Contains("Premade", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        continue;
+                    }
+                    if (entryPath.Contains("Mockup", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        continue;
+                    }
                     if (entryPath.Contains("_GIFs", StringComparison.InvariantCultureIgnoreCase))
                     {
                         continue;
@@ -167,20 +179,22 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                         continue;
                     }
 
+
+                }
+
+                /*
                     if (!Loaders.Any(loader => loader.TryLoad(details, currentMetadata, asset)))
                     {
                         unprocessedAssets.Add(asset.FullPath);
                     }
-                }
+                 */
 
-                // Now we can verify that all unprocessed assets have been processed.
-                foreach (var asset in unprocessedAssets.Except(details.ProcessedAssets, StringComparer.InvariantCultureIgnoreCase))
-                {
-                    Debug.LogWarning($"Failed to process asset {asset} no handler was registered that could handle it.");
-                }
+                //// Now we can verify that all unprocessed assets have been processed.
+                //foreach (var asset in unprocessedAssets.Except(details.ProcessedAssets, StringComparer.InvariantCultureIgnoreCase))
+                //{
+                //    Debug.LogWarning($"Failed to process asset {asset} no handler was registered that could handle it.");
+                //}
             }
         }
-
-        
     }
 }

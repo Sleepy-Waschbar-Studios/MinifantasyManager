@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace SleepyWaschbarStudios.MinifantasyManager
 {
-
     public class RuntimeExample : MonoBehaviour
     {
         // Start is called before the first frame update
@@ -21,5 +20,4 @@ namespace SleepyWaschbarStudios.MinifantasyManager
 
         }
     }
-
 }

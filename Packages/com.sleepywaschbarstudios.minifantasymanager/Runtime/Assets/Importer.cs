@@ -71,6 +71,16 @@ namespace MinifantasyManager.Runtime.Assets
               - Will typically cleanup names such as removing prefix `_` and cleanup repetititons for example above
                 was originally _Attack_range_Diagonal_ancient_danger.png
 
+            == Design ==
+            I've tried a few designs and run into a few interesting issues.
+
+            Originally, I wanted to avoid reproccessing the entire zip and so I processed items as I iterated through the zip
+            mainly so that I avoid the "performance" issue of multiple iteration.
+
+            But why?  This makes the code a lot more complex and I'm only seeking over the zip entries multiple times not
+            the actual file data.  So this is just illogical.
+
+            So instead we make a tree, we do tag the tree with information based on the path such as if it's a shadow.
              */
         }
     }

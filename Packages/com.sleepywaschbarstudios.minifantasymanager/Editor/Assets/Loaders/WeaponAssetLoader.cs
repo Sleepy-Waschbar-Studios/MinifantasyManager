@@ -9,9 +9,6 @@ using UnityEngine;
 
 namespace MinifantasyManager.Editor.Assets.Loaders
 {
-    /// <summary>
-    /// The weapons pack (and friends) require tons of custom logic, so I'm putting it in here.
-    /// </summary>
     public class WeaponAssetLoader : AssetLoaderBase
     {
         public override bool TryLoad(TemporaryLoadedDetails details, ManagerMetadata currentMetadata, TemporaryAsset asset)
@@ -32,8 +29,6 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                     details.Weapons[classification] = classificationDetails = new TemporaryWeaponClassificationDetails(classification);
                 }
 
-                TemporaryWeaponDetails? weaponDetails = null;
-                List<TemporaryAnimationDetails>? animationDetails = null;
                 if (asset.Segments.Length > 1)
                 {
                     // We may either be a list of character animations for this "category" of weapons

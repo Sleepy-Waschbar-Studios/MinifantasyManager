@@ -46,7 +46,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
 
         public string Name { get; }
         public string Prefix { get; }
-        public string ShadowPrefix { get; }
+        public TextAsset? AnimationFile { get; set; }
         public Dictionary<string, TemporaryAnimationDetails> Details { get; set; } = new();
     }
 
@@ -68,11 +68,18 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         public TextAsset? AnimationFile { get; set; }
         public Dictionary<string, TemporaryAnimationDetails> CharacterAnimations { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
         public ImageAsset? ProjectileAnimation { get; set; }
-        public TemporaryAnimationDetails WeaponAnimation { get; set; } = new();
+        public TemporaryAnimationDetails? WeaponAnimation { get; set; }
     }
 
     public class TemporaryAnimationDetails
     {
+        public string Name { get; set; }
+
+        public TemporaryAnimationDetails(string name)
+        {
+            Name = name;
+        }
+
         /// <summary>
         /// This should be shared between multiple classes if possible.
         /// </summary>
@@ -97,6 +104,12 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         /// _Shadows
         /// </summary>
         ShadowAnimation = 1 << 1,
+
+        ForegroundAnimation = 1 << 2,
+
+        BackgroundAnimation = 1 << 3,
+
+        AnimationInfo = 1 << 4,
     }
 
     public abstract class TemporaryAsset
@@ -105,6 +118,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         public string Filename { get; }
         public string FilenameNoExt { get; }
         public string Ext { get; }
+        public string FullDirPath { get; }
         public string[] Segments { get; }
         public AssetFlags Flags { get; private set; } = AssetFlags.None;
 
@@ -117,6 +131,21 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
             Filename = Path.GetFileName(path);
             FilenameNoExt = Path.GetFileNameWithoutExtension(path);
             Ext = Path.GetExtension(path);
+            FullDirPath = Path.GetDirectoryName(path);
+
+            if (Filename.Contains("_b.", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Flags |= AssetFlags.BackgroundAnimation;
+            }
+            else
+            {
+                Flags |= AssetFlags.ForegroundAnimation;
+            }
+
+            if (Ext.Equals(".txt", StringComparison.InvariantCultureIgnoreCase) && Filename.Contains("Animation", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Flags |= AssetFlags.AnimationInfo;
+            }
 
             Segments = path
                 .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
@@ -125,12 +154,12 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
                 .Skip(1)
                 .SkipWhile(directory =>
                 {
-                    if (directory.Equals("_Shadows", StringComparison.InvariantCultureIgnoreCase))
+                    if (directory.Replace("_", "").Equals("Shadows", StringComparison.InvariantCultureIgnoreCase))
                     {
                         Flags |= AssetFlags.ShadowAnimation;
                         return true;
                     }
-                    else if (directory.Equals("_Characters", StringComparison.InvariantCultureIgnoreCase))
+                    else if (directory.Replace("_", "").Equals("Characters", StringComparison.InvariantCultureIgnoreCase))
                     {
                         Flags |= AssetFlags.CharacterAnimation;
                         return true;
