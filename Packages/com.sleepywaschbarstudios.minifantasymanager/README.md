@@ -96,6 +96,11 @@ This package was heavily inspired by Vincent Douchin's great [MiniCharacterCreat
 
 This package's layout was copied from [Shane Celis](https://twitter.com/shanecelis)'s [unity-package-template](https://github.com/shanecelis/unity-package-template) since sadly the auto generator didn't work.
 
+## Dependencies
+
+- We use Newtonsoft.Json just as a personal preference over the System.Json
+- We use SharpLibZip because it supports parallel zip entry access, this is significantly faster than using the default one and enables us to load the patreon exclusive file in just 1s on my computer.
+
 ## Overall Design of Codebase
 
 Just putting some thoughts down here for documentation, but might be useful for someone trying to hack on this to extend it in some way.
@@ -112,6 +117,8 @@ This means that we do the following process.
    - Animation?
 2. Then we iterate through the tree and try to figure out what assets exist based on existing conventions.
 3. We have specific loaders that then load the above assets for example "character" or "weapon" or "tileset"
+
+> We *could* unzip when we make the tree but this isn't actually faster, for one we have to unzip files that we don't want to read (mockups/gifs/...), for two some of the zips have very long filenames (patreon exclusive) that actually break a default windows system (ouch), and I don't want to have end users to have to handle that.  The benefit would be that we could skip iteration of entire folders at once but since to extract them we have to read their contents it sort of defeats the point.
 
 Imperfections exist in this entire process but the goal is to have the loader be 95% then to handle the specific edgecases manually either in the code (or by the user in rare cases).  For example, we handle typos by having a process that renames assets as they get loaded to the right name (and we report the typos so they can get fixed up).
 

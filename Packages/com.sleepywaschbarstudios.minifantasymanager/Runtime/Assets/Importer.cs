@@ -14,7 +14,6 @@ namespace MinifantasyManager.Runtime.Assets
     /// </summary>
     public class Importer
     {
-
         public void PerformImport(string directoryPath)
         {
             if (!Directory.Exists(directoryPath))

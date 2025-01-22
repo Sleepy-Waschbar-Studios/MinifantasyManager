@@ -1,12 +1,10 @@
 ﻿#nullable enable
 
-using Codice.Client.Common.TreeGrouper;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace MinifantasyManager.Runtime.Assets.Temporary
 {
@@ -33,7 +31,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         }
 
         public Dictionary<string, TemporaryAnimationDetails> Animations { get; set; } = new();
-        public TextAsset? AnimationFile { get; set; }
+        public TemporaryTextAsset? AnimationFile { get; set; }
     }
 
     public class TemporaryCharacterDetails
@@ -46,7 +44,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
 
         public string Name { get; }
         public string Prefix { get; }
-        public TextAsset? AnimationFile { get; set; }
+        public TemporaryTextAsset? AnimationFile { get; set; }
         public Dictionary<string, TemporaryAnimationDetails> Details { get; set; } = new();
     }
 
@@ -65,9 +63,9 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
 
     public class TemporaryWeaponAnimationDetails
     {
-        public TextAsset? AnimationFile { get; set; }
+        public TemporaryTextAsset? AnimationFile { get; set; }
         public Dictionary<string, TemporaryAnimationDetails> CharacterAnimations { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
-        public ImageAsset? ProjectileAnimation { get; set; }
+        public TemporaryImageAsset? ProjectileAnimation { get; set; }
         public TemporaryAnimationDetails? WeaponAnimation { get; set; }
     }
 
@@ -83,11 +81,11 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         /// <summary>
         /// This should be shared between multiple classes if possible.
         /// </summary>
-        public TextAsset? AnimationFile { get; set; }
+        public TemporaryTextAsset? AnimationFile { get; set; }
 
-        public ImageAsset? ForegroundAnimation { get; set; }
-        public ImageAsset? BackgroundAnimation { get; set; }
-        public ImageAsset? ShadowAnimation { get; set; }
+        public TemporaryImageAsset? ForegroundAnimation { get; set; }
+        public TemporaryImageAsset? BackgroundAnimation { get; set; }
+        public TemporaryImageAsset? ShadowAnimation { get; set; }
     }
 
     [Flags]
@@ -173,23 +171,23 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         }
     }
 
-    public class TextAsset : TemporaryAsset
+    public class TemporaryTextAsset : TemporaryAsset
     {
         public string Contents { get; set; }
 
-        public TextAsset(string path, string contents) : base(path)
+        public TemporaryTextAsset(string path, string contents) : base(path)
         {
             Contents = contents;
         }
     }
 
-    public class ImageAsset : TemporaryAsset
+    public class TemporaryImageAsset : TemporaryAsset
     {
-        public ImageAsset(string path, Texture2D texture) : base(path)
+        public TemporaryImageAsset(string path, Func<Stream> textureStream) : base(path)
         {
-            Texture = texture;
+            TextureStream = textureStream;
         }
 
-        public Texture2D Texture { get; set; }
+        public Func<Stream> TextureStream { get; set; }
     }
 }

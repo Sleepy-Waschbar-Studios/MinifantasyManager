@@ -30,7 +30,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             Debug.LogFormat("Creature {0} has a possible name of {1}", string.Join("..", asset.Segments), possibleCreatureName);
 
             // We don't want to grab shadow animation idle
-            if (asset.Filename.EndsWith("Idle.png", StringComparison.InvariantCultureIgnoreCase) && !asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+            if (asset.Filename.EndsWith("Idle.png", StringComparison.OrdinalIgnoreCase) && !asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
             {
                 // This will tell us the prefix that all future sprites will have
                 var prefix = asset.Filename[..^"Idle.png".Length].Replace("_", "");
@@ -38,7 +38,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 details.CreatureAsset.Add(possibleCreatureName, creature);
                 creature.Details["Idle"] = new TemporaryAnimationDetails("Idle")
                 {
-                    ForegroundAnimation = (ImageAsset)asset,
+                    ForegroundAnimation = (TemporaryImageAsset)asset,
                 };
                 details.ProcessedAssets.Add(asset.FullPath);
                 if (details.UnprocessedAssets.TryGetValue(UNPROCESSED_ASSET_PREFIX + possibleCreatureName, out var unprocessedAssets))
@@ -60,7 +60,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             }
             else if (details.CreatureAsset.TryGetValue(possibleCreatureName, out var creature))
             {
-                if (asset is ImageAsset imageAsset)
+                if (asset is TemporaryImageAsset imageAsset)
                 {
                     // Canonicalisation
                     string animationName = asset.Filename;
@@ -107,7 +107,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                     {
                         Debug.LogWarning($"We have two animation info assets, overriding {creature.AnimationFile.FullPath} with {asset.FullPath}");
                     }
-                    creature.AnimationFile = (Runtime.Assets.Temporary.TextAsset)asset;
+                    creature.AnimationFile = (Runtime.Assets.Temporary.TemporaryTextAsset)asset;
                 }
                 else
                 {

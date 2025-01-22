@@ -14,7 +14,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
         public override bool TryLoad(TemporaryLoadedDetails details, ManagerMetadata currentMetadata, TemporaryAsset asset)
         {
             // Detect if it's a likely weapon
-            if (asset.FullPath.Contains("Weapon", StringComparison.InvariantCultureIgnoreCase) || asset.FullPath.Contains("Attack", StringComparison.InvariantCultureIgnoreCase))
+            if (asset.FullPath.Contains("Weapon", StringComparison.OrdinalIgnoreCase) || asset.FullPath.Contains("Attack", StringComparison.OrdinalIgnoreCase))
             {
                 // This is semi-hard to find because weapons can be called anything, but this is reasonable enough
                 // Weapons are hard to classify because it's quite inconsistent for example
@@ -33,7 +33,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 {
                     // We may either be a list of character animations for this "category" of weapons
                     // or we might be the actual weapon
-                    if (asset.Segments[1].Equals("_Characters", StringComparison.InvariantCultureIgnoreCase))
+                    if (asset.Segments[1].Equals("_Characters", StringComparison.OrdinalIgnoreCase))
                     {
                         // Figure out what characters this sprite belongs to
                         // They may be grouped i.e. _human_elf_orc...
@@ -43,8 +43,8 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                             .Split('_')
                             .Skip(1)
                             .Where(suffix =>
-                                !suffix.Equals("_Characters", StringComparison.InvariantCultureIgnoreCase) &&
-                                !suffix.Equals("_Shadows", StringComparison.InvariantCultureIgnoreCase));
+                                !suffix.Equals("_Characters", StringComparison.OrdinalIgnoreCase) &&
+                                !suffix.Equals("_Shadows", StringComparison.OrdinalIgnoreCase));
                         foreach (var character in characters) {
                         }
 
@@ -57,7 +57,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 }
 
                 // Inconsistency 1: AnimationInfo is sometimes Animation_Info.txt or _AnimationInfo.txt or AnimationInfo.txt
-                if (asset.Filename.Replace("_", "").Equals("AnimationInfo.txt", StringComparison.InvariantCultureIgnoreCase)) {
+                if (asset.Filename.Replace("_", "").Equals("AnimationInfo.txt", StringComparison.OrdinalIgnoreCase)) {
                     // This animation needs to apply for the entire tree from this point
                     // so we have to figure out where we are
                     switch (asset.Segments.Length)
@@ -65,7 +65,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                         case 1:
                             {
                                 // classification level
-                                classificationDetails.AnimationFile = asset as Runtime.Assets.Temporary.TextAsset;
+                                classificationDetails.AnimationFile = asset as Runtime.Assets.Temporary.TemporaryTextAsset;
                                 break;
                             }
                         case 2:
@@ -74,7 +74,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                                 break;
                             }
                     }
-                } else if (asset.Filename.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase)) {
+                } else if (asset.Filename.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) {
                     DebugExtensions.VerboseLog($"{asset.FullPath} classified as a weapon sprite with classification {classification} .");
                 } else {
                     Debug.LogError($"Unexpected file expected either AnimationInfo or a png file but got {asset.FullPath} ignoring");
