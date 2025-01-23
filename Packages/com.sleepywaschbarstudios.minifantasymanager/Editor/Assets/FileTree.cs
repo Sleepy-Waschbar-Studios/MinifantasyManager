@@ -6,7 +6,6 @@ using MinifantasyManager.Runtime.Assets.Temporary;
 
 namespace MinifantasyManager.Editor.Assets
 {
-
     public class FileTree
     {
         public string Name { get; set; }

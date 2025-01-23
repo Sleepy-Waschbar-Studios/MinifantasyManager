@@ -39,7 +39,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             var window = GetWindow<LoaderWindow>();
             try
             {
-                Loader.LoadPackage(path, true);
+                PackageLoader.LoadPackage(path, true);
             }
             finally
             {
@@ -48,7 +48,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
         }
     }
 
-    public static class Loader
+    public static class PackageLoader
     {
         private const string PackagePath = "MinifantasyManager/Packages.json";
         private static readonly IHandler IgnoreHandler = new IgnoreHandler();
@@ -102,8 +102,18 @@ namespace MinifantasyManager.Editor.Assets.Loaders
 
             var filename = Path.GetFileName(path);
             using var tree = RootFileTree.OpenFromFile(path, showProgress);
+            if (tree == null) return;
+
             var details = new TemporaryLoadedDetails();
-            
+
+            var classifier = new AssetLoader();
+            var assets = classifier.LoadAssetsFromTree(tree);
+
+            foreach (var file in tree.AllLoadedFiles)
+            {
+                Debug.LogErrorFormat("File {0} has not been processed", file);
+            }
+
             var match = PatreonAllExclusivesRegex.Match(filename);
             if (match.Success) {
                 // Specialised parsing for patreon archives

@@ -64,7 +64,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
     public class TemporaryWeaponAnimationDetails
     {
         public TemporaryTextAsset? AnimationFile { get; set; }
-        public Dictionary<string, TemporaryAnimationDetails> CharacterAnimations { get; set; } = new(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, TemporaryAnimationDetails> CharacterAnimations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public TemporaryImageAsset? ProjectileAnimation { get; set; }
         public TemporaryAnimationDetails? WeaponAnimation { get; set; }
     }
@@ -96,12 +96,12 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         /// <summary>
         /// _Characters
         /// </summary>
-        CharacterAnimation = 1 << 0,
+        Character = 1 << 0,
 
         /// <summary>
         /// _Shadows
         /// </summary>
-        ShadowAnimation = 1 << 1,
+        Shadow = 1 << 1,
 
         ForegroundAnimation = 1 << 2,
 
@@ -120,6 +120,11 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         public string[] Segments { get; }
         public AssetFlags Flags { get; private set; } = AssetFlags.None;
 
+        public override string ToString()
+        {
+            return FullPath;
+        }
+
         protected TemporaryAsset(string path)
         {
             FullPath = path;
@@ -131,7 +136,7 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
             Ext = Path.GetExtension(path);
             FullDirPath = Path.GetDirectoryName(path);
 
-            if (Filename.Contains("_b.", StringComparison.InvariantCultureIgnoreCase))
+            if (Filename.Contains("_b.", StringComparison.OrdinalIgnoreCase))
             {
                 Flags |= AssetFlags.BackgroundAnimation;
             }
@@ -140,9 +145,14 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
                 Flags |= AssetFlags.ForegroundAnimation;
             }
 
-            if (Ext.Equals(".txt", StringComparison.InvariantCultureIgnoreCase) && Filename.Contains("Animation", StringComparison.InvariantCultureIgnoreCase))
+            if (Ext.Equals(".txt", StringComparison.OrdinalIgnoreCase) && Filename.Contains("Animation", StringComparison.OrdinalIgnoreCase))
             {
                 Flags |= AssetFlags.AnimationInfo;
+            }
+
+            if (FullPath.Contains("Shadow", StringComparison.OrdinalIgnoreCase))
+            {
+                Flags |= AssetFlags.Shadow;
             }
 
             Segments = path
@@ -152,14 +162,14 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
                 .Skip(1)
                 .SkipWhile(directory =>
                 {
-                    if (directory.Replace("_", "").Equals("Shadows", StringComparison.InvariantCultureIgnoreCase))
+                    if (directory.Replace("_", "").Equals("Shadows", StringComparison.OrdinalIgnoreCase))
                     {
-                        Flags |= AssetFlags.ShadowAnimation;
+                        Flags |= AssetFlags.Shadow;
                         return true;
                     }
-                    else if (directory.Replace("_", "").Equals("Characters", StringComparison.InvariantCultureIgnoreCase))
+                    else if (directory.Replace("_", "").Equals("Characters", StringComparison.OrdinalIgnoreCase))
                     {
-                        Flags |= AssetFlags.CharacterAnimation;
+                        Flags |= AssetFlags.Character;
                         return true;
                     }
                     else

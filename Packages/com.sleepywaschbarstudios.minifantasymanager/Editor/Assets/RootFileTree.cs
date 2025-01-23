@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MinifantasyManager.Editor.Assets.Loaders;
@@ -12,8 +13,9 @@ namespace MinifantasyManager.Editor.Assets
 {
     public class RootFileTree : IDisposable
     {
-        private FileTree? Tree = null;
+        public FileTree? Tree = null;
         private ZipFile ZipFile;
+        public HashSet<string> AllLoadedFiles = new();
 
         public RootFileTree(ZipFile zipFile)
         {
@@ -77,16 +79,17 @@ namespace MinifantasyManager.Editor.Assets
                 var entryPath = entry.Name;
 
                 // Safe files to skip
-                if (Loader.FilesToSkip.Contains(Path.GetFileName(entry.Name))) continue;
+                if (PackageLoader.FilesToSkip.Contains(Path.GetFileName(entry.Name))) continue;
 
                 // Skip files that we don't care about.
                 if (entryPath.Contains("Premade", StringComparison.OrdinalIgnoreCase)) continue;
                 if (entryPath.Contains("Mockup", StringComparison.OrdinalIgnoreCase)) continue;
                 if (entryPath.Contains("_GIFs", StringComparison.OrdinalIgnoreCase)) continue;
+                if (entryPath.Contains("Legacy", StringComparison.OrdinalIgnoreCase)) continue;
 
                 // Use extension to determine handler
                 var extension = Path.GetExtension(entryPath);
-                if (!Loader.ExtensionHandlers.TryGetValue(extension, out var handler))
+                if (!PackageLoader.ExtensionHandlers.TryGetValue(extension, out var handler))
                 {
                     Debug.LogError($"Found an extension we couldn't handle {extension}, ignoring.");
                     continue;
@@ -101,6 +104,7 @@ namespace MinifantasyManager.Editor.Assets
                     continue;
                 }
 
+                tree.AllLoadedFiles.Add(asset.FullPath);
                 tree.Insert(asset);
             }
 

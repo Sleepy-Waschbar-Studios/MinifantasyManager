@@ -30,7 +30,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             Debug.LogFormat("Creature {0} has a possible name of {1}", string.Join("..", asset.Segments), possibleCreatureName);
 
             // We don't want to grab shadow animation idle
-            if (asset.Filename.EndsWith("Idle.png", StringComparison.OrdinalIgnoreCase) && !asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+            if (asset.Filename.EndsWith("Idle.png", StringComparison.OrdinalIgnoreCase) && !asset.Flags.HasFlag(AssetFlags.Shadow))
             {
                 // This will tell us the prefix that all future sprites will have
                 var prefix = asset.Filename[..^"Idle.png".Length].Replace("_", "");
@@ -66,7 +66,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                     string animationName = asset.Filename;
                     
                     // 1. Remove _Shadow suffix and Shadow prefix
-                    if (asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+                    if (asset.Flags.HasFlag(AssetFlags.Shadow))
                     {
                         // TODO: Maybe use trim?
                         animationName = animationName.ReplaceCaseInsensitive("Shadows", "").ReplaceCaseInsensitive("Shadow", "").Trim('_');
@@ -92,7 +92,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                     {
                         animationDetails = creature.Details[animationName] = new(animationName);
                     }
-                    if (asset.Flags.HasFlag(AssetFlags.ShadowAnimation))
+                    if (asset.Flags.HasFlag(AssetFlags.Shadow))
                     {
                         animationDetails.ShadowAnimation = imageAsset;
                     }

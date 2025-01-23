@@ -112,7 +112,7 @@ namespace MinifantasyManager.Runtime.Assets
                     .Concat(p.Weapons.Select(w => new KeyValuePair<string, AssetSuffixType>(w.Key, AssetSuffixType.Weapon)))
                 .Append(new KeyValuePair<string, AssetSuffixType>("f", AssetSuffixType.Foreground))
                 .Append(new KeyValuePair<string, AssetSuffixType>("b", AssetSuffixType.Background))
-            ), StringComparer.InvariantCultureIgnoreCase);
+            ), StringComparer.OrdinalIgnoreCase);
         }
     }
 }
