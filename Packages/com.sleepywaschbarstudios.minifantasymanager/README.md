@@ -40,6 +40,39 @@ You can do `CreatureRef.LoadAsync("MyCreature")` to load in a creature (there ar
 
 > **Please** don't reference assets directly, use the prefabs or the code path!!  A really good example is that we don't have any sprite atlases packing being built for now, but we will 100% be doing this at some point in the future for performance reasons.  This will result in assets being changed.
 
+### Palette Swapping
+
+We also support palette swapping, the tricky part of this is two fold;
+1. Modifying the sprites to be palette swappable
+2. Easy palettes to work with
+
+Conceptually, this isn't *too* difficult, we could do something like this;
+- Supply a large palette (64/256 colors) and generate a color map between the "original" style by choosing the closest color
+  - This obviously relies on a good algorithm to choose a close color, but ideally you have enough colors that there isn't a "missing color"
+- This color map would be implemented in shaders (for performance) and would work by having all sprites be changed to be an indexed sprite instead, for example we could store the color in the R component (if there are 256 colors this works!) then it just becomes a lookup on the map using the R value.
+  - While this does require modifying every sprite it's not as crazy as it looks since we already have this process in-place.
+
+Since this is trying to **match** colors it works pretty well but it gets more tricky if we want to have color variations of units!  For example maybe wanting a blue or green dragon!
+- Some colors like in the "dmg" animation can't be changed since they are red for a reason
+- Requires a custom material for each color and we have to generate a color map of red -> blue or green for example, this gets especially tricky when we have shading you need darker variants of the green/blue and need to select those correctly.
+
+My current thinking is as follows (for above):
+1. Generate the "master" palette, the idea of this palette is that it contains every single color ("sorted")
+   1. This lets me understand how big of a palette I should have, I likely will require quite a large palette but with normal mapping the shading might not be as necessary?
+2. Colors will make up the following structure `R/G = X/Y` and `B` is flags (such as "is outline" for stuff like "dmg effects"?), the alpha is not replaced and is kept when applying palette
+3. Support a 256x256 color palette, this ideally will be large enough to support the "master" palette but we can also generate a color map that supports a smaller set of colors.
+4. Support a "color" mask that can be applied to specific items, the color mask would apply prior to the palette swap and would swap specific indexed cells
+   1. We could implement this through having a texture the size of a palette that just maps each color X -> X, with Y -> Z.  This is quite memory intensive though
+   2. But we could also implement it like this `lerp(To, In, saturate(distance(From, In) / e-f))`, any value > 0 should become extremely large and a value < 0 becomes extremely small, and 0 -> 0, meaning saturation becomes either 0 or 1.
+
+### Image Outputs (& Shadows)
+
+All assets come with sprite shadows as a separate asset but we also support generating normals for the use in dynamic shadowing.
+
+When importing assets we automatically generate a normal texture of the asset and place it as a secondary texture.  This is done through unity's greyscale -> normal map functionality.  This adds some nice detail bumps and helps the textures standout.
+
+
+
 ### CustomCreature.prefab (and it's scripts)
 
 This is an (experimental) object that is intended to allow you to create completely custom creatures based upon layering sprites, the idea is that it'll offset the sprite layers so everything lines up even during animations.

@@ -37,12 +37,18 @@ namespace MinifantasyManager.Editor.Assets.Loaders
         {
             var path = EditorUtility.OpenFilePanelWithFilters("Choose a package!", "", new string[] { "Zip Files", "zip" });
             var window = GetWindow<LoaderWindow>();
+            PackageUtils.SetUniqueId();
+            AssetDatabase.DisallowAutoRefresh();
             try
             {
+                // I tried to use https://docs.unity3d.com/6000.0/Documentation/ScriptReference/AssetDatabase.StartAssetEditing.html but it
+                // seems this has a bunch of weird sideeffects and just didn't work well with this flow.
                 PackageLoader.LoadPackage(path, true);
             }
             finally
             {
+                AssetDatabase.AllowAutoRefresh();
+                PackageUtils.ClearUniqueId();
                 EditorUtility.ClearProgressBar();
             }
         }
@@ -81,7 +87,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 return metadata;
             }
 
-            var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.TextAsset>(path);
+            var asset = AssetDatabase.LoadAssetAtPath<TextAsset>(path);
             return JsonConvert.DeserializeObject<T>(asset.text)!;
         }
 
@@ -105,13 +111,16 @@ namespace MinifantasyManager.Editor.Assets.Loaders
             if (tree == null) return;
 
             var details = new TemporaryLoadedDetails();
-
-            var classifier = new AssetLoader();
-            var assets = classifier.LoadAssetsFromTree(tree);
-
-            foreach (var file in tree.AllLoadedFiles)
+            // 1. Find our actual nice root folder
+            var root = tree.Tree ?? throw new NullReferenceException("Expected tree to not be null.");
+            while (root != null && root.SubTrees.Count == 1 && root.Files.Count == 0)
             {
-                Debug.LogErrorFormat("File {0} has not been processed", file);
+                root = root.SubTrees[0];
+            }
+
+            if (root == null)
+            {
+                throw new Exception("Couldn't find the root of the tree.");
             }
 
             var match = PatreonAllExclusivesRegex.Match(filename);
@@ -126,7 +135,7 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 if (!match.Success) {
                     throw new Exception("Filename didn't match expected formats.  You might need to rename it.");
                 }
-                var name = match.Groups["name"].Value;
+                var name = match.Groups["name"].Value.Trim('_');
                 var version = match.Groups["version"].Value;
                 // For now the suffix is unused
                 _ = match.Groups["suffix"].Value;
@@ -149,6 +158,14 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                     };
                 }
 
+                PackageUtils.PathsToHandle = tree.AllLoadedFiles;
+                PackageUtils.CreateTemporaryPackage(pkg.Name);
+                if (!PackageDefinition.PackageLookups.TryGetValue(name, out var lookup))
+                {
+                    throw new Exception($"Failed to find a package for {name}");
+                }
+                var assets = lookup.Classify(root);
+
                 /*
                     if (!Loaders.Any(loader => loader.TryLoad(details, currentMetadata, asset)))
                     {
@@ -161,6 +178,11 @@ namespace MinifantasyManager.Editor.Assets.Loaders
                 //{
                 //    Debug.LogWarning($"Failed to process asset {asset} no handler was registered that could handle it.");
                 //}
+            }
+
+            foreach (var file in tree.AllLoadedFiles)
+            {
+                Debug.LogErrorFormat("File {0} has not been processed", file);
             }
         }
     }

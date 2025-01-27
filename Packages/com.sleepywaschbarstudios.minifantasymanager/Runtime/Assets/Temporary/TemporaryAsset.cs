@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using UnityEditor;
+using UnityEngine;
 
 namespace MinifantasyManager.Runtime.Assets.Temporary
 {
@@ -199,5 +201,11 @@ namespace MinifantasyManager.Runtime.Assets.Temporary
         }
 
         public Func<Stream> TextureStream { get; set; }
+
+        public Texture2D CreateAsset()
+        {
+            using var stream = TextureStream();
+            return PackageUtils.WriteFileToTemporaryAsset<Texture2D>(this.FilenameNoExt, this.Ext, stream);
+        }
     }
 }

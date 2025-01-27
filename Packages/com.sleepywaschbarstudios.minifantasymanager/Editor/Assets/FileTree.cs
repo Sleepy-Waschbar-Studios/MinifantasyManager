@@ -2,10 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MinifantasyManager.Runtime.Assets.Temporary;
 
 namespace MinifantasyManager.Editor.Assets
 {
+    public enum AssetTypes
+    {
+        Tileset,
+        Props,
+        Characters
+    }
+
     public class FileTree
     {
         public string Name { get; set; }
@@ -20,6 +28,43 @@ namespace MinifantasyManager.Editor.Assets
             Name = name;
             FullPath = fullPath;
             Depth = depth;
+        }
+
+        public T FindAsset<T>(string name) where T: TemporaryAsset
+        {
+            return Files.FirstOrDefault(f => f.FilenameNoExt.Equals(name, StringComparison.OrdinalIgnoreCase)) as T
+                ?? throw new FileNotFoundException("Couldn't find " + name);
+        }
+
+        public FileTree Find(string path)
+        {
+            var components = path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var current = this;
+            foreach (var component in components)
+            {
+                current = current.SubTrees.FirstOrDefault(t => t.Name.Equals(component, StringComparison.OrdinalIgnoreCase));
+                if (current == null) throw new DirectoryNotFoundException(path);
+            }
+
+            return current;
+        }
+
+
+        public FileTree Find(AssetTypes asset)
+        {
+            foreach (var tree in SubTrees)
+            {
+                switch (asset)
+                {
+                    case AssetTypes.Tileset:
+                    {
+                        if (tree.Name.TrimEnd('s').Equals("Tileset", StringComparison.OrdinalIgnoreCase)) return tree;
+                        break;
+                    }
+                }
+            }
+
+            throw new DirectoryNotFoundException(asset.ToString());
         }
 
         public FileTree Insert(TemporaryAsset file)

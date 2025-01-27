@@ -48,6 +48,8 @@ public class TilesetAssetType : AssetType
         if (GetSingleAssetOrError(shadow, "shadowTileset") is not TemporaryImageAsset shadowTileset) yield break;
         file_paths_to_handle.Remove(shadowTileset.FullPath);
 
+        
+
         var tilesetAsset = new TilesetLoadedAsset(tileset, shadowTileset);
         yield return tilesetAsset;
     }

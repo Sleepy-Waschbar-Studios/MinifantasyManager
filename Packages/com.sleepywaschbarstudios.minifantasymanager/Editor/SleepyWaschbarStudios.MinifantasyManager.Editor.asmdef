@@ -1,9 +1,10 @@
 {
     "name": "SleepyWaschbarStudios.MinifantasyManager.Editor",
+    "rootNamespace": "",
     "references": [
-        "SleepyWaschbarStudios.MinifantasyManager"
+        "SleepyWaschbarStudios.MinifantasyManager",
+        "Unity.2D.Sprite.Editor"
     ],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
@@ -12,5 +13,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
